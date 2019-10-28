@@ -31,9 +31,9 @@ public class QuestionDao {
         }
     }
 
-    public UserEntity getUserByEmail(final String email) {
+    public QuestionEntity getQuestionByUuid(final String uuid) {
         try {
-            return entityManager.createNamedQuery("userByEmail", UserEntity.class).setParameter("email", email).getSingleResult();
+            return entityManager.createNamedQuery("quesByUuid", QuestionEntity.class).setParameter("uuid", uuid).getSingleResult();
         } catch (NoResultException nre) {
             return null;
         }
@@ -52,11 +52,9 @@ public class QuestionDao {
         return userAuthTokenEntity;
     }
 
-    public void updateUser(final UserEntity updatedUserEntity) {
-        entityManager.merge(updatedUserEntity);
-    }
-    public void updateUserAuthTokenEntity(final UserAuthTokenEntity updateUserAuthTokenEntity) {
-        entityManager.merge(updateUserAuthTokenEntity);
+
+    public void updateQuestion(final QuestionEntity questionEntity) {
+        entityManager.merge(questionEntity);
     }
 
     public UserAuthTokenEntity getUserAuthToken(final String accessToken) {

@@ -5,6 +5,7 @@ import com.upgrad.quora.service.dao.UserDao;
 import com.upgrad.quora.service.entity.QuestionEntity;
 import com.upgrad.quora.service.entity.UserAuthTokenEntity;
 import com.upgrad.quora.service.exception.AuthenticationFailedException;
+import com.upgrad.quora.service.exception.InvalidQuestionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -42,7 +43,8 @@ public class QuestionBusinessService {
         String uuid=questionDao.createQuestion(questionEntity).getUuid();
         return uuid;
     }
-public List<QuestionEntity> getAllQuestions(String accessToken) throws AuthenticationFailedException {
+
+    public List<QuestionEntity> getAllQuestions(String accessToken) throws AuthenticationFailedException {
     UserAuthTokenEntity userAuthTokenEntity=userDao.getUserAuthToken(accessToken);
     if(userAuthTokenEntity==null){
         throw new AuthenticationFailedException("ATHR-001","User has not signed in");
@@ -52,6 +54,31 @@ public List<QuestionEntity> getAllQuestions(String accessToken) throws Authentic
     }
     return questionDao.getAllQuestions();
 }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    public String updateQuestion(String questionId,String content,String accessToken) throws AuthenticationFailedException, InvalidQuestionException {
+        UserAuthTokenEntity userAuthTokenEntity=userDao.getUserAuthToken(accessToken);
+
+        if(userAuthTokenEntity==null){
+            throw new AuthenticationFailedException("ATHR-001","User has not signed in");
+        }
+        if(userAuthTokenEntity.getLogoutAt()!=null){
+            throw new AuthenticationFailedException("ATHR-002","User is signed out.Sign in first to edit the question");
+        }
+        QuestionEntity questionEntity=questionDao.getQuestionByUuid(questionId);
+        if(questionEntity==null){
+            throw new InvalidQuestionException("QUES-001","Entered question uuid does not exist");
+        }
+        if(userAuthTokenEntity.getUser().getId()==questionEntity.getUser().getId()){
+            questionEntity.setContent(content);
+            final ZonedDateTime now = ZonedDateTime.now();
+            questionEntity.setDate(now);
+            questionDao.updateQuestion(questionEntity);
+
+            return questionId;
+        }
+        throw new AuthenticationFailedException("ATHR-003","Only the question owner can edit the question");
+    }
 
 }
 
