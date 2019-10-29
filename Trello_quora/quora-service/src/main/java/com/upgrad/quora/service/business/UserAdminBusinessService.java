@@ -19,8 +19,7 @@ public class UserAdminBusinessService {
     private PasswordCryptographyProvider cryptographyProvider;
 
     @Transactional(propagation = Propagation.REQUIRED)
-    public String deleteUser(final String uuid, final String accessToken) throws ResourceNotFoundException,
-            UnauthorizedException, AuthenticationFailedException, UserNotFoundException {
+    public String deleteUser(final String uuid, final String accessToken) throws AuthenticationFailedException, UserNotFoundException {
 
 
         UserAuthTokenEntity userAuthTokenEntity = userDao.getUserAuthToken(accessToken);

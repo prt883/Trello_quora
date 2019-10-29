@@ -31,6 +31,7 @@ public class QuestionDao {
         }
     }
 
+
     public QuestionEntity getQuestionByUuid(final String uuid) {
         try {
             return entityManager.createNamedQuery("quesByUuid", QuestionEntity.class).setParameter("uuid", uuid).getSingleResult();
@@ -68,12 +69,12 @@ public class QuestionDao {
 
     }
 
-    public String deleteUserByUuid(final String uuid) {
+    public String deleteQuestionByUuid(final String uuid) {
 
-           Query query= entityManager.createQuery("delete from UserEntity ut where ut.uuid = :uuid");
+           Query query= entityManager.createQuery("delete from QuestionEntity q where q.uuid = :uuid");
            query.setParameter("uuid",uuid);
            query.executeUpdate();
-            return uuid;
+           return uuid;
     }
 
 }

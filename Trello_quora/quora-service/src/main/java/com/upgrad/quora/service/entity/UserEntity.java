@@ -88,8 +88,9 @@ public class UserEntity implements Serializable {
     @Size(max = 30)
     private String contactNumber;
 
-    @OneToMany(cascade = CascadeType.REMOVE, mappedBy = "user")
-    private List<UserAuthTokenEntity> userAuthTokenEntity;
+    @OneToMany(cascade = CascadeType.REMOVE,mappedBy = "user",fetch = FetchType.LAZY)
+    private List<QuestionEntity> questionEntityList;
+
 
     @Override
     public boolean equals(Object obj) {
@@ -148,13 +149,9 @@ public class UserEntity implements Serializable {
 
     public void setContactNumber(String contactNumber) { this.contactNumber = contactNumber; }
 
-    public List<UserAuthTokenEntity> getUserAuthTokenEntity() {
-        return userAuthTokenEntity;
-    }
+    public List<QuestionEntity> getQuestionEntityList() {return questionEntityList; }
 
-    public void setUserAuthTokenEntity(List<UserAuthTokenEntity> userAuthTokenEntity) {
-        this.userAuthTokenEntity = userAuthTokenEntity;
-    }
+    public void setQuestionEntityList(List<QuestionEntity> questionEntityList) {this.questionEntityList = questionEntityList; }
 
     @Override
     public int hashCode() {

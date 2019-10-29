@@ -1,14 +1,12 @@
 package com.upgrad.quora.api.controller;
 
 
-import com.upgrad.quora.api.model.QuestionDetailsResponse;
-import com.upgrad.quora.api.model.QuestionEditResponse;
-import com.upgrad.quora.api.model.QuestionRequest;
-import com.upgrad.quora.api.model.QuestionResponse;
+import com.upgrad.quora.api.model.*;
 import com.upgrad.quora.service.business.QuestionBusinessService;
 import com.upgrad.quora.service.entity.QuestionEntity;
 import com.upgrad.quora.service.exception.AuthenticationFailedException;
 import com.upgrad.quora.service.exception.InvalidQuestionException;
+import com.upgrad.quora.service.exception.UserNotFoundException;
 import org.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -56,12 +54,37 @@ public class QuestionController {
     }
 
     @RequestMapping(method = RequestMethod.PUT, path = "/edit/{questionId}",consumes = MediaType.APPLICATION_JSON_UTF8_VALUE,produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
-    public ResponseEntity<QuestionEditResponse> userDetails1(@PathVariable("questionId") String questionId,final QuestionRequest questionRequest, @RequestHeader("authorization") final String authorization) throws AuthenticationFailedException, JSONException, InvalidQuestionException {
+    public ResponseEntity<QuestionEditResponse> editByQuestionId(@PathVariable("questionId") String questionId,final QuestionRequest questionRequest, @RequestHeader("authorization") final String authorization) throws AuthenticationFailedException, JSONException, InvalidQuestionException {
 
         String accessToken = authorization.split("Bearer ")[1];
         String uuid=questionBusinessService.updateQuestion(questionId,questionRequest.getContent(),accessToken);
 
         QuestionEditResponse questionEditResponse=new QuestionEditResponse().id(uuid).status("QUESTION EDITED");
         return new ResponseEntity<QuestionEditResponse>(questionEditResponse, HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.DELETE, path = "/delete/{questionId}",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<QuestionDeleteResponse> deleteQuestionByQuestionId(@PathVariable("questionId") String questionId,@RequestHeader("authorization") final String authorization) throws AuthenticationFailedException,InvalidQuestionException {
+
+        String accessToken = authorization.split("Bearer ")[1];
+        String uuid=questionBusinessService.deleteQuestion(questionId,accessToken);
+
+        QuestionDeleteResponse questionDeleteResponse=new QuestionDeleteResponse().id(uuid).status("QUESTION DELETED");
+        return new ResponseEntity<QuestionDeleteResponse>(questionDeleteResponse, HttpStatus.OK);
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = "/all/{userId}",produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+    public ResponseEntity<List<QuestionDetailsResponse>> getQuestionsByuserId(@PathVariable("userId") String userId,@RequestHeader("authorization") final String authorization) throws AuthenticationFailedException,UserNotFoundException {
+
+        String accessToken = authorization.split("Bearer ")[1];
+        List<QuestionEntity> allQuestions = questionBusinessService.getAllQuestionsByUserId(userId,accessToken);
+        List<QuestionDetailsResponse> questionDetailsResponses = new ArrayList<>();
+        for (QuestionEntity question : allQuestions) {
+            QuestionDetailsResponse qResponse = new QuestionDetailsResponse();
+            qResponse.setId(question.getUuid());
+            qResponse.setContent(question.getContent());
+            questionDetailsResponses.add(qResponse);
+        }
+        return new ResponseEntity<List<QuestionDetailsResponse>>(questionDetailsResponses, HttpStatus.OK);
     }
 }
