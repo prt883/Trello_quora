@@ -98,7 +98,6 @@ public class QuestionBusinessService {
         }
         throw new AuthenticationFailedException("ATHR-003","Only the question owner can edit the question");
     }
-
     @Transactional(propagation = Propagation.REQUIRED)
     public String deleteQuestion(String questionId,String accessToken) throws AuthenticationFailedException, InvalidQuestionException {
         UserAuthTokenEntity userAuthTokenEntity=userDao.getUserAuthToken(accessToken);

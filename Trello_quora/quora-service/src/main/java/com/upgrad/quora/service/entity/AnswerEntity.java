@@ -10,20 +10,17 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.io.Serializable;
 import java.time.ZonedDateTime;
-import java.util.List;
 
 @Entity
-@Table(name = "question")
+@Table(name = "answer")
 @NamedQueries(
         {
-                @NamedQuery(name = "quesByUuid", query = "select q from QuestionEntity q where q.uuid = :uuid"),
-                @NamedQuery(name = "allQuestions", query = "select q from QuestionEntity q")
-
+                @NamedQuery(name = "answerByUuid", query = "select a from AnswerEntity a where a.uuid = :uuid")
         }
 )
 
 
-public class QuestionEntity implements Serializable {
+public class AnswerEntity implements Serializable {
 
     @Id
     @Column(name = "ID")
@@ -40,17 +37,19 @@ public class QuestionEntity implements Serializable {
     @NotNull
     private UserEntity user;
 
-    @Column(name = "CONTENT")
+    @ManyToOne(cascade = CascadeType.REMOVE)
+    @JoinColumn(name = "QUESTION_ID")
     @NotNull
-    @Size(max = 500)
-    private String content;
+    private QuestionEntity questionEntity;
+
+    @Column(name = "ans")
+    @NotNull
+    @Size(max = 255)
+    private String ans;
 
     @Column(name = "DATE")
     @NotNull
     private ZonedDateTime date;
-
-    @OneToMany(cascade = CascadeType.REMOVE,mappedBy = "questionEntity",fetch = FetchType.LAZY)
-    private List<AnswerEntity> answerEntityList;
 
 
     public Integer getId() {return id; }
@@ -65,17 +64,17 @@ public class QuestionEntity implements Serializable {
 
     public void setUser(UserEntity user) { this.user = user; }
 
-    public String getContent() {return content; }
+    public QuestionEntity getQuestionEntity() { return questionEntity; }
 
-    public void setContent(String content) {this.content = content; }
+    public void setQuestionEntity(QuestionEntity questionEntity) { this.questionEntity = questionEntity; }
+
+    public String getAns() {return ans; }
+
+    public void setAns(String ans) {this.ans = ans; }
 
     public ZonedDateTime getDate() {return date; }
 
     public void setDate(ZonedDateTime date) {this.date = date; }
-
-    public List<AnswerEntity> getAnswerEntityList() {return answerEntityList; }
-
-    public void setAnswerEntityList(List<AnswerEntity> answerEntityList) {this.answerEntityList = answerEntityList; }
 
     @Override
     public boolean equals(Object obj) {
