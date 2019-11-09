@@ -4,6 +4,7 @@ import com.upgrad.quora.service.dao.QuestionDao;
 import com.upgrad.quora.service.dao.UserDao;
 import com.upgrad.quora.service.entity.QuestionEntity;
 import com.upgrad.quora.service.entity.UserAuthTokenEntity;
+import com.upgrad.quora.service.entity.UserEntity;
 import com.upgrad.quora.service.exception.AuthorizationFailedException;
 import com.upgrad.quora.service.exception.InvalidQuestionException;
 import com.upgrad.quora.service.exception.UserNotFoundException;
@@ -30,9 +31,14 @@ public class QuestionBusinessService {
         if(userAuthTokenEntity==null){
             throw new AuthorizationFailedException("ATHR-001","User has not signed in");
         }
+
         if(userAuthTokenEntity.getLogoutAt()!=null){
             throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to post a question");
         }
+        if(userAuthTokenEntity.getExpiresAt().isBefore(ZonedDateTime.now())){
+            throw new AuthorizationFailedException("ATHR-004","Token Expired. Sign in again");
+        }
+
 
         final QuestionEntity questionEntity=new QuestionEntity();
         questionEntity.setUuid(UUID.randomUUID().toString());
@@ -46,14 +52,18 @@ public class QuestionBusinessService {
     }
 
     public List<QuestionEntity> getAllQuestions(String accessToken) throws AuthorizationFailedException {
-    UserAuthTokenEntity userAuthTokenEntity=userDao.getUserAuthToken(accessToken);
-    if(userAuthTokenEntity==null){
-        throw new AuthorizationFailedException("ATHR-001","User has not signed in");
-    }
-    if(userAuthTokenEntity.getLogoutAt()!=null){
-        throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get all questions");
-    }
-    return questionDao.getAllQuestions();
+        UserAuthTokenEntity userAuthTokenEntity=userDao.getUserAuthToken(accessToken);
+        if(userAuthTokenEntity==null){
+            throw new AuthorizationFailedException("ATHR-001","User has not signed in");
+        }
+
+        if(userAuthTokenEntity.getLogoutAt()!=null){
+          throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get all questions");
+        }
+        if(userAuthTokenEntity.getExpiresAt().isBefore(ZonedDateTime.now())){
+            throw new AuthorizationFailedException("ATHR-004","Token Expired. Sign in again");
+        }
+        return questionDao.getAllQuestions();
     }
 
 
@@ -63,13 +73,19 @@ public class QuestionBusinessService {
         if(userAuthTokenEntity==null){
             throw new AuthorizationFailedException("ATHR-001","User has not signed in");
         }
+
         if(userAuthTokenEntity.getLogoutAt()!=null){
             throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get all questions posted by a specific user");
         }
-        if(!userAuthTokenEntity.getUuid().equals(userId)){
+        if(userAuthTokenEntity.getExpiresAt().isBefore(ZonedDateTime.now())){
+            throw new AuthorizationFailedException("ATHR-004","Token Expired. Sign in again");
+        }
+        UserEntity userEntity=userDao.getUser(userId);
+
+        if(userEntity==null){
             throw new UserNotFoundException("USR-001","User with entered uuid whose question details are to be seen does not exist");
         }
-        return userAuthTokenEntity.getUser().getQuestionEntityList();
+        return userEntity.getQuestionEntityList();
     }
 
 
@@ -81,8 +97,12 @@ public class QuestionBusinessService {
         if(userAuthTokenEntity==null){
             throw new AuthorizationFailedException("ATHR-001","User has not signed in");
         }
+
         if(userAuthTokenEntity.getLogoutAt()!=null){
             throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to edit the question");
+        }
+        if(userAuthTokenEntity.getExpiresAt().isBefore(ZonedDateTime.now())){
+            throw new AuthorizationFailedException("ATHR-004","Token Expired. Sign in again");
         }
         QuestionEntity questionEntity=questionDao.getQuestionByUuid(questionId);
         if(questionEntity==null){
@@ -107,6 +127,9 @@ public class QuestionBusinessService {
         }
         if(userAuthTokenEntity.getLogoutAt()!=null){
             throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to delete a question");
+        }
+        if(userAuthTokenEntity.getExpiresAt().isBefore(ZonedDateTime.now())){
+            throw new AuthorizationFailedException("ATHR-004","Token Expired. Sign in again");
         }
         QuestionEntity questionEntity=questionDao.getQuestionByUuid(questionId);
         if(questionEntity==null){

@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.ZonedDateTime;
+
 @Service
 public class UserAdminBusinessService {
 
@@ -28,6 +30,9 @@ public class UserAdminBusinessService {
         }
         if(userAuthTokenEntity.getLogoutAt()!=null){
             throw new AuthorizationFailedException("ATHR-002","User is signed out");
+        }
+        if(userAuthTokenEntity.getExpiresAt().isBefore(ZonedDateTime.now())){
+            throw new AuthorizationFailedException("ATHR-004","Token Expired. Sign in again");
         }
         if(!userAuthTokenEntity.getUser().getRole().equals("admin")){
             throw new AuthorizationFailedException("ATHR-003","Unauthorized Access, Entered user is not an admin");
@@ -51,6 +56,10 @@ public class UserAdminBusinessService {
 
         if(userAuthTokenEntity.getLogoutAt()!=null){
             throw new AuthorizationFailedException("ATHR-002","User is signed out.Sign in first to get user details");
+        }
+
+        if(userAuthTokenEntity.getExpiresAt().isBefore(ZonedDateTime.now())){
+            throw new AuthorizationFailedException("ATHR-004","Token Expired. Sign in again");
         }
 
         UserEntity userEntity=userDao.getUser(uuid);
