@@ -1,5 +1,4 @@
-/*package com.upgrad.quora.api.controller;
-
+package com.upgrad.quora.api.controller;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -138,4 +137,3 @@ public class AnswerControllerTest {
 
 
 }
-*/
